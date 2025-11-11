@@ -1,0 +1,77 @@
+{
+  "description": "Market Profile Session Features for Prediction",
+  "type": "object",
+  "properties": {
+    "session_poc": {
+      "type": "number",
+      "description": "Point of Control (POC) for current session"
+    },
+    "session_vah": {
+      "type": "number",
+      "description": "Value Area High for current session"
+    },
+    "session_val": {
+      "type": "number",
+      "description": "Value Area Low for current session"
+    },
+    "va_range_width": {
+      "type": "number",
+      "description": "Value Area range width (VAH - VAL)"
+    },
+    "balance_flag": {
+      "type": "integer",
+      "description": "1 if session is balanced, 0 otherwise"
+    },
+    "volume_imbalance": {
+      "type": "number",
+      "description": "Volume imbalance ratio (buy/total)"
+    },
+    "one_day_return": {
+      "type": "number",
+      "description": "1-day lagged return"
+    },
+    "three_day_return": {
+      "type": "number",
+      "description": "3-day lagged return"
+    },
+    "atr_14": {
+      "type": "number",
+      "description": "Average True Range (14-period)"
+    },
+    "rsi_14": {
+      "type": "number",
+      "description": "Relative Strength Index (14-period)"
+    },
+    "session_volume": {
+      "type": "number",
+      "description": "Total volume for current session"
+    }
+  },
+  "required": [
+    "session_poc",
+    "session_vah",
+    "session_val",
+    "va_range_width",
+    "balance_flag",
+    "volume_imbalance",
+    "one_day_return",
+    "three_day_return",
+    "atr_14",
+    "rsi_14",
+    "session_volume"
+  ],
+  "example": {
+    "session_poc": 42500.0,
+    "session_vah": 42750.0,
+    "session_val": 42250.0,
+    "va_range_width": 500.0,
+    "balance_flag": 1,
+    "volume_imbalance": 0.52,
+    "one_day_return": 0.01,
+    "three_day_return": 0.025,
+    "atr_14": 350.0,
+    "rsi_14": 60.5,
+    "session_volume": 1500000
+  }
+}
+

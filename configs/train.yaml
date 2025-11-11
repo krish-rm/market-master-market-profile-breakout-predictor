@@ -1,0 +1,49 @@
+# Training Configuration
+data:
+  ticker: "BTC-USD"
+  period: "2y"  # 24 months of data
+  interval: "1h"  # hourly candles
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  output_file: "market_profile.parquet"
+
+market_profile:
+  tpo_size: 30  # 30-minute Time Price Opportunities
+  vol_percentile: 70  # Percentile for VA High/Low
+  
+label:
+  breakout_threshold: 0.005  # 0.5% above VAH
+  
+model:
+  test_size: 0.2
+  validation_size: 0.2
+  random_state: 42
+  
+  logistic_regression:
+    C: [0.001, 0.01, 0.1, 1, 10]
+    max_iter: 1000
+    
+  random_forest:
+    n_estimators: [100, 200, 300]
+    max_depth: [10, 15, 20]
+    min_samples_split: [5, 10]
+    min_samples_leaf: [2, 4]
+    
+  xgboost:
+    n_estimators: [100, 200, 300]
+    max_depth: [5, 7, 10]
+    learning_rate: [0.01, 0.05, 0.1]
+    subsample: [0.8, 1.0]
+
+artifacts:
+  model_dir: "models"
+  preprocessor: "preprocessor.pkl"
+  model: "best_model.pkl"
+  metrics: "metrics.json"
+
+evaluation:
+  cv_folds: 5
+  stratified: true
+  
+random_seed: 42
+

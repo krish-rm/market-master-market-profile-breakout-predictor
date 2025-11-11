@@ -1,0 +1,16 @@
+{
+  "features": {
+    "session_poc": 42500.0,
+    "session_vah": 42750.0,
+    "session_val": 42250.0,
+    "va_range_width": 500.0,
+    "balance_flag": 1,
+    "volume_imbalance": 0.52,
+    "one_day_return": 0.01,
+    "three_day_return": 0.025,
+    "atr_14": 350.0,
+    "rsi_14": 60.5,
+    "session_volume": 1500000.0
+  }
+}
+

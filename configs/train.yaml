@@ -18,6 +18,7 @@ model:
   test_size: 0.2
   validation_size: 0.2
   random_state: 42
+  cv_folds: 5
   
   logistic_regression:
     C: [0.001, 0.01, 0.1, 1, 10]

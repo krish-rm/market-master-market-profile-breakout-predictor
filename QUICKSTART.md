@@ -85,6 +85,46 @@ python scripts/predict.py --input examples/sample_prediction_request.json
 
 ---
 
+## 📊 Exploring Market Profile Features (Interactive)
+
+Understand all Market Profile features with interactive visualizations and explanations:
+
+```bash
+python scripts/explore_features.py
+```
+
+**What you'll see:**
+- 📈 **4 Interactive Visualizations:**
+  - Price chart with POC, VAH, VAL levels marked
+  - Volume distribution histogram (Market Profile structure)
+  - Balance flag visualization (balanced vs unbalanced sessions)
+  - Volume imbalance pie chart (buying vs selling pressure)
+
+- 📝 **Detailed Feature Explanations:**
+  - `session_poc`: Point of Control (price with most volume)
+  - `session_vah`: Value Area High (70th percentile)
+  - `session_val`: Value Area Low (30th percentile)
+  - `va_range_width`: Width of the value area
+  - `balance_flag`: Balanced vs unbalanced session indicator
+  - `volume_imbalance`: Buying vs selling pressure ratio
+  - `session_volume`: Total session volume
+  - `atr_14`: Average True Range (volatility measure)
+  - `rsi_14`: Relative Strength Index (momentum oscillator)
+  - `one_day_return`: 1-day return (short-term trend)
+  - `three_day_return`: 3-day return (medium-term trend)
+
+**Output:** Interactive matplotlib plots + detailed feature explanations with real data values
+
+**Example Output:**
+```
+📊 SESSION_POC (POINT OF CONTROL)
+Description: The price level where the most trading volume occurred...
+Current Value: 101,563.44
+💡 Interpretation: Most trading happened at $101,563.44...
+```
+
+---
+
 ## 🌐 Running the API
 
 ### Local Development

@@ -2,12 +2,17 @@
 FastAPI service for Market Profile predictions. 
  
 Run with: uvicorn scripts.serve:app --host 0.0.0.0 --port 9696 
-""" 
+"""
 
 import logging
 import json
+import sys
 from pathlib import Path
 from typing import List, Optional
+
+# Add project root to Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field

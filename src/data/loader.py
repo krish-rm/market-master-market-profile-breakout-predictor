@@ -46,16 +46,123 @@ class DataLoader:
         
         # Fetch from Yahoo Finance
         logger.info(f"Fetching data for {self.ticker} from Yahoo Finance...")
+        
+        from datetime import datetime, timedelta
+        
+        # Calculate start/end dates
+        end_date = datetime.now()
+        if self.period.endswith('y'):
+            years = int(self.period[:-1])
+            start_date = end_date - timedelta(days=years * 365)
+        elif self.period.endswith('mo'):
+            months = int(self.period[:-2])
+            start_date = end_date - timedelta(days=months * 30)
+        elif self.period.endswith('d'):
+            days = int(self.period[:-1])
+            start_date = end_date - timedelta(days=days)
+        else:
+            start_date = end_date - timedelta(days=730)  # Default to 2 years
+        
+        start_str = start_date.strftime('%Y-%m-%d')
+        end_str = end_date.strftime('%Y-%m-%d')
+        
+        data = None
+        methods_tried = []
+        
+        # Method 1: Try download() with list of tickers (sometimes more reliable)
         try:
+            logger.info("Trying method 1: yf.download() with ticker list...")
+            methods_tried.append("download(list)")
             data = yf.download(
-                self.ticker,
-                period=self.period,
+                [self.ticker],
+                start=start_str,
+                end=end_str,
                 interval=self.interval,
-                progress=False
+                progress=False,
+                show_errors=False
             )
+            if not data.empty:
+                # Handle MultiIndex from download()
+                if isinstance(data.columns, pd.MultiIndex):
+                    data = data.droplevel(1, axis=1)
+                logger.info("Method 1 succeeded!")
         except Exception as e:
-            logger.error(f"Error fetching data: {e}")
-            raise
+            logger.debug(f"Method 1 failed: {e}")
+            data = None
+        
+        # Method 2: Try Ticker.history() with date strings
+        if data is None or data.empty:
+            try:
+                logger.info("Trying method 2: Ticker.history() with date strings...")
+                methods_tried.append("Ticker.history(dates)")
+                ticker_obj = yf.Ticker(self.ticker)
+                data = ticker_obj.history(
+                    start=start_str,
+                    end=end_str,
+                    interval=self.interval,
+                    auto_adjust=True,
+                    prepost=False
+                )
+                if not data.empty:
+                    logger.info("Method 2 succeeded!")
+            except Exception as e:
+                logger.debug(f"Method 2 failed: {e}")
+                data = None
+        
+        # Method 3: Try Ticker.history() with period (may fail but worth trying)
+        if data is None or data.empty:
+            try:
+                logger.info("Trying method 3: Ticker.history() with period...")
+                methods_tried.append("Ticker.history(period)")
+                ticker_obj = yf.Ticker(self.ticker)
+                data = ticker_obj.history(
+                    period=self.period,
+                    interval=self.interval,
+                    auto_adjust=True,
+                    prepost=False
+                )
+                if not data.empty:
+                    logger.info("Method 3 succeeded!")
+            except Exception as e:
+                logger.debug(f"Method 3 failed: {e}")
+                data = None
+        
+        # Method 4: Try download() with period (last resort)
+        if data is None or data.empty:
+            try:
+                logger.info("Trying method 4: yf.download() with period...")
+                methods_tried.append("download(period)")
+                data = yf.download(
+                    self.ticker,
+                    period=self.period,
+                    interval=self.interval,
+                    progress=False,
+                    show_errors=False
+                )
+                if not data.empty:
+                    if isinstance(data.columns, pd.MultiIndex):
+                        data = data.droplevel(1, axis=1)
+                    logger.info("Method 4 succeeded!")
+            except Exception as e:
+                logger.debug(f"Method 4 failed: {e}")
+                data = None
+        
+        if data is None or data.empty:
+            error_msg = f"No data returned for {self.ticker} after trying methods: {', '.join(methods_tried)}"
+            logger.error(error_msg)
+            logger.error("This may be due to:")
+            logger.error("1. Yahoo Finance API issues")
+            logger.error("2. Network connectivity problems")
+            logger.error("3. yfinance library datetime bug (try: pip install --upgrade yfinance)")
+            raise ValueError(error_msg)
+        
+        # Handle MultiIndex columns (yfinance sometimes returns these)
+        if isinstance(data.columns, pd.MultiIndex):
+            data.columns = data.columns.droplevel(1)
+        
+        # Drop extra columns that history() may return (Dividends, Stock Splits)
+        columns_to_keep = ['Open', 'High', 'Low', 'Close', 'Volume']
+        data = data[[col for col in columns_to_keep if col in data.columns]]
         
         # Ensure index is datetime
         if not isinstance(data.index, pd.DatetimeIndex):

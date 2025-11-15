@@ -362,7 +362,40 @@ python scripts/predict.py --input examples/sample_prediction_request.json
 }
 ```
 
-### 3. Running the API Server
+### 3. Exploring Market Profile Features (Interactive)
+
+Understand all Market Profile features with interactive visualizations:
+
+```bash
+python scripts/explore_features.py
+```
+
+**What it does:**
+- Loads real Bitcoin data
+- Analyzes a recent trading session
+- Creates 4 interactive visualizations:
+  - Price chart with POC, VAH, VAL levels
+  - Volume distribution histogram (Market Profile)
+  - Balance flag visualization
+  - Volume imbalance pie chart
+- Explains all 11 features with current values and interpretations
+
+**Features explained:**
+- `session_poc`: Point of Control (price with most volume)
+- `session_vah`: Value Area High (70th percentile)
+- `session_val`: Value Area Low (30th percentile)
+- `va_range_width`: Width of the value area
+- `balance_flag`: Balanced vs unbalanced session
+- `volume_imbalance`: Buying vs selling pressure
+- `session_volume`: Total session volume
+- `atr_14`: Average True Range (volatility)
+- `rsi_14`: Relative Strength Index (momentum)
+- `one_day_return`: 1-day return
+- `three_day_return`: 3-day return
+
+**Output:** Interactive matplotlib plots + detailed feature explanations
+
+### 4. Running the API Server
 
 ```bash
 # Local development
@@ -564,7 +597,8 @@ market-profile-ml/
 │   ├── __init__.py
 │   ├── train.py                       # Model training script
 │   ├── predict.py                     # Batch prediction script
-│   └── serve.py                       # FastAPI application
+│   ├── serve.py                       # FastAPI application
+│   └── explore_features.py            # Interactive feature explorer
 └── notebook.ipynb                     # Jupyter notebook (EDA)
 ```
 
@@ -597,6 +631,18 @@ The notebook includes:
 - Model training and comparison
 - Feature importance analysis
 - Performance evaluation
+
+### Interactive Feature Explorer
+
+```bash
+python scripts/explore_features.py
+```
+
+Explore and understand all Market Profile features with:
+- Interactive visualizations (4 charts)
+- Real-time feature explanations
+- Current values and interpretations
+- Visual Market Profile structure
 
 ### Code Style
 

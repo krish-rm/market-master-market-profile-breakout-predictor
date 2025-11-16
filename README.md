@@ -437,6 +437,27 @@ Full reset (clears data, models, logs, reports, figures):
 make reset-all
 ```
 
+### 6. Running with Docker (Optional)
+
+Once you have trained a model locally (`make retrain-latest` so that `models/best_model.pkl` exists), you can serve the API in Docker:
+
+```bash
+# Build image
+docker build -t market-profile-ml:latest .
+
+# Run container (Windows cmd example)
+docker run -d --name market-profile-api ^
+  -p 9696:9696 ^
+  -v "%cd%\models:/app/models" ^
+  -v "%cd%\data:/app/data" ^
+  market-profile-ml:latest
+
+# Health check
+curl http://localhost:9696/health
+```
+
+See [docs/Docker.md](docs/Docker.md) for full Docker deployment instructions and Docker Compose usage.
+
 ### 6. (Optional) Serving the API
 
 The dashboard and CLI run locally without the API. Start the API only if you want external clients (curl/Postman/other apps) to call endpoints.

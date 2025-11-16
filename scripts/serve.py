@@ -15,7 +15,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 import pandas as pd
 
 from scripts.predict import PredictionService
@@ -56,8 +56,8 @@ class SessionFeatures(BaseModel):
     rsi_14: float = Field(..., description="RSI (14-period)")
     session_volume: float = Field(..., description="Session volume")
     
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "session_poc": 42500.0,
                 "session_vah": 42750.0,
@@ -72,6 +72,7 @@ class SessionFeatures(BaseModel):
                 "session_volume": 1500000.0
             }
         }
+    )
 
 
 class PredictionRequest(BaseModel):

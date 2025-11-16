@@ -13,11 +13,11 @@ Production-ready ML system for predicting Bitcoin market breakouts using Market 
 7. [Results](#results)
 8. [Installation](#installation)
 9. [Usage](#usage)
-10. [API Documentation](#api-documentation)
+10. [API Documentation](docs/API.md)
 11. [Docker Deployment](#docker-deployment)
 12. [Project Structure](#project-structure)
-13. [Development](#development)
-14. [Troubleshooting](#troubleshooting)
+13. [Development](docs/Development.md)
+14. [Troubleshooting](docs/Troubleshooting.md)
 
 ---
 
@@ -362,40 +362,7 @@ python scripts/predict.py --input examples/sample_prediction_request.json
 }
 ```
 
-### 3. Exploring Market Profile Features (Interactive)
-
-Understand all Market Profile features with interactive visualizations:
-
-```bash
-python scripts/explore_features.py
-```
-
-**What it does:**
-- Loads real Bitcoin data
-- Analyzes a recent trading session
-- Creates 4 interactive visualizations:
-  - Price chart with POC, VAH, VAL levels
-  - Volume distribution histogram (Market Profile)
-  - Balance flag visualization
-  - Volume imbalance pie chart
-- Explains all 11 features with current values and interpretations
-
-**Features explained:**
-- `session_poc`: Point of Control (price with most volume)
-- `session_vah`: Value Area High (70th percentile)
-- `session_val`: Value Area Low (30th percentile)
-- `va_range_width`: Width of the value area
-- `balance_flag`: Balanced vs unbalanced session
-- `volume_imbalance`: Buying vs selling pressure
-- `session_volume`: Total session volume
-- `atr_14`: Average True Range (volatility)
-- `rsi_14`: Relative Strength Index (momentum)
-- `one_day_return`: 1-day return
-- `three_day_return`: 3-day return
-
-**Output:** Interactive matplotlib plots + detailed feature explanations
-
-### 4. Running the API Server
+### 3. Running the API Server
 
 ```bash
 # Local development
@@ -438,71 +405,37 @@ curl -X POST http://localhost:9696/batch-predict \
 
 **Interactive Docs:** http://localhost:9696/docs
 
+### 5. Running the Dashboard (Streamlit)
+
+Launch the interactive dashboard for visualizations and predictions:
+
+```bash
+# Using Make
+make dashboard
+
+# OR directly
+streamlit run scripts/dashboard.py
+```
+
+Dashboard opens at: `http://localhost:8501`
+
+**Dashboard Features:**
+- 🔮 **Predictions Page**: Interactive form to input Market Profile features and get real-time predictions
+- 📊 **Model Performance**: Visualize metrics, confusion matrix, and performance charts
+- 📈 **Feature Explorer**: Learn about all Market Profile features with detailed explanations
+- 📜 **Prediction History**: Track your recent predictions
+
+**Dashboard Pages:**
+1. **Home**: Overview and quick start guide
+2. **Predictions**: Make predictions with interactive form
+3. **Model Performance**: View ROC AUC, Precision, Recall, F1-Score, and confusion matrix
+4. **Feature Explorer**: Understand Market Profile features and view feature importance
+
 ---
 
 ## API Documentation
 
-### Authentication
-
-No authentication required for this demo. In production, add JWT or API keys.
-
-### Request/Response Format
-
-**Request (Single Prediction):**
-```json
-{
-  "features": {
-    "session_poc": 42500.0,
-    "session_vah": 42750.0,
-    "session_val": 42250.0,
-    "va_range_width": 500.0,
-    "balance_flag": 1,
-    "volume_imbalance": 0.52,
-    "one_day_return": 0.01,
-    "three_day_return": 0.025,
-    "atr_14": 350.0,
-    "rsi_14": 60.5,
-    "session_volume": 1500000.0
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "prediction": 1,
-  "probability": 0.6720,
-  "confidence": 0.6720
-}
-```
-
-- **prediction:** 0 (won't break) or 1 (will break)
-- **probability:** Predicted probability of breakout (0-1)
-- **confidence:** Max(probability, 1-probability)
-
-### Error Handling
-
-**Invalid Request (Missing fields):**
-```json
-HTTP 422 Unprocessable Entity
-{
-  "detail": [
-    {
-      "loc": ["body", "features", "session_poc"],
-      "msg": "field required",
-      "type": "value_error.missing"
-    }
-  ]
-}
-```
-
-**Service Unavailable:**
-```json
-HTTP 503 Service Unavailable
-{
-  "detail": "Prediction service not available"
-}
-```
+See the full API guide in [docs/API.md](docs/API.md).
 
 ---
 
@@ -598,7 +531,7 @@ market-profile-ml/
 │   ├── train.py                       # Model training script
 │   ├── predict.py                     # Batch prediction script
 │   ├── serve.py                       # FastAPI application
-│   └── explore_features.py            # Interactive feature explorer
+│   └── dashboard.py                   # Streamlit dashboard
 └── notebook.ipynb                     # Jupyter notebook (EDA)
 ```
 
@@ -606,61 +539,7 @@ market-profile-ml/
 
 ## Development
 
-### Running Tests
-
-```bash
-# All tests
-pytest tests/ -v
-
-# With coverage
-pytest tests/ -v --cov=src --cov=scripts
-
-# Specific test file
-pytest tests/test_market_profile.py -v
-```
-
-### Jupyter Notebook
-
-```bash
-jupyter notebook notebook.ipynb
-```
-
-The notebook includes:
-- Data exploration and visualization
-- Feature distributions
-- Model training and comparison
-- Feature importance analysis
-- Performance evaluation
-
-### Interactive Feature Explorer
-
-```bash
-python scripts/explore_features.py
-```
-
-Explore and understand all Market Profile features with:
-- Interactive visualizations (4 charts)
-- Real-time feature explanations
-- Current values and interpretations
-- Visual Market Profile structure
-
-### Code Style
-
-```bash
-# Lint code
-flake8 src/ scripts/ --max-line-length=100 --exclude=__pycache__
-
-# Format code (optional)
-black src/ scripts/
-```
-
-### Adding New Features
-
-1. **Feature Calculation:** Add to `src/features/market_profile.py`
-2. **Pipeline Integration:** Update `engineer_features()` function
-3. **Configuration:** Add to `configs/train.yaml`
-4. **Tests:** Add unit tests to `tests/test_market_profile.py`
-5. **API Schema:** Update `configs/api_schema.json` if adding to API
+See the full development guide in [docs/Development.md](docs/Development.md).
 
 ### Contributing
 
@@ -674,94 +553,7 @@ black src/ scripts/
 
 ## Troubleshooting
 
-### Common Issues
-
-#### 1. "Model not found" error when running scripts/predict.py
-
-**Problem:** `FileNotFoundError: Model not found at models/best_model.pkl`
-
-**Solution:**
-```bash
-# Train model first
-python scripts/train.py --config configs/train.yaml
-
-# Then predict
-python scripts/predict.py --input examples/sample_input.csv
-```
-
-#### 2. Yahoo Finance connection error
-
-**Problem:** `yfinance failed to download data`
-
-**Solution:**
-```bash
-# Check internet connection
-# Wait a moment (API throttling)
-# Or use cached data:
-rm data/raw/*.parquet  # Clear cache to retry
-python scripts/train.py --config configs/train.yaml
-```
-
-#### 3. API returns 503 Service Unavailable
-
-**Problem:** Prediction service not loaded
-
-**Solution:**
-```bash
-# Check models directory exists and has artifacts
-ls -la models/
-
-# Make sure model training completed successfully
-python scripts/train.py --config configs/train.yaml
-
-# Check logs
-docker logs market-profile-api
-```
-
-#### 4. Docker build fails
-
-**Problem:** `ERROR: failed to solve with frontend dockerfile.v0`
-
-**Solution:**
-```bash
-# Clear Docker build cache
-docker system prune -a
-
-# Rebuild
-docker build -t market-profile-ml:latest .
-```
-
-#### 5. Out of memory during training
-
-**Problem:** `MemoryError: Unable to allocate X GiB`
-
-**Solution:**
-- Reduce data period in `configs/train.yaml`
-- Use a machine with more RAM
-- Process data in smaller batches
-
-#### 6. Port 9696 already in use
-
-**Problem:** `Address already in use`
-
-**Solution:**
-```bash
-# Find process using port
-lsof -i :9696
-
-# Kill process or use different port
-uvicorn scripts.serve:app --host 0.0.0.0 --port 8000
-```
-
-### Debug Mode
-
-Enable verbose logging:
-
-```python
-# In scripts/train.py or scripts/serve.py
-import logging
-logging.basicConfig(level=logging.DEBUG)
-```
+See the full troubleshooting guide in [docs/Troubleshooting.md](docs/Troubleshooting.md).
 
 ---
 

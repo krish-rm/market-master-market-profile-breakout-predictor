@@ -13,7 +13,7 @@ from src.features.market_profile import (
 @pytest.fixture
 def sample_daily_data():
     """Create sample OHLCV data for a single trading day."""
-    times = pd.date_range('2024-01-15 09:30', periods=24, freq='1H')
+    times = pd.date_range('2024-01-15 09:30', periods=24, freq='1h')
     
     data = {
         'timestamp': times,
@@ -36,7 +36,7 @@ def sample_daily_data():
 @pytest.fixture
 def sample_multi_day_data():
     """Create sample OHLCV data for multiple days."""
-    times = pd.date_range('2024-01-01', periods=240, freq='1H')
+    times = pd.date_range('2024-01-01', periods=240, freq='1h')
     
     data = {
         'timestamp': times,
@@ -213,12 +213,24 @@ class TestIntegration:
         # Check we got features for multiple days
         assert len(features) > 1
         
-        # Check all values are numeric
-        for col in features.columns:
-            assert pd.api.types.is_numeric_dtype(features[col])
+        # Check all numeric columns are numeric (exclude string columns like profile_type, date)
+        numeric_cols = features.select_dtypes(include=[np.number]).columns
+        non_numeric_cols = features.select_dtypes(exclude=[np.number]).columns
         
-        # Check no infinite values
-        assert np.isfinite(features.values).all()
+        # Expected non-numeric columns (if any)
+        expected_non_numeric = ['profile_type', 'date']
+        
+        # Check that non-numeric columns are expected ones
+        for col in non_numeric_cols:
+            assert col in expected_non_numeric, f"Unexpected non-numeric column: {col}"
+        
+        # Check all numeric columns are actually numeric
+        for col in numeric_cols:
+            assert pd.api.types.is_numeric_dtype(features[col]), f"Column {col} should be numeric"
+        
+        # Check no infinite values in numeric columns
+        numeric_data = features[numeric_cols].values
+        assert np.isfinite(numeric_data).all(), "Found infinite values in numeric columns"
 
 
 if __name__ == "__main__":

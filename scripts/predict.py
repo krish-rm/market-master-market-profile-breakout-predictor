@@ -10,11 +10,19 @@ import argparse
 import json
 import logging
 import pickle
+import warnings
 from pathlib import Path
 from typing import Dict, List, Any
 
 import pandas as pd
 import numpy as np
+
+# Suppress scikit-learn version compatibility warnings when loading models
+warnings.filterwarnings(
+    "ignore",
+    message=".*Trying to unpickle estimator.*from version.*",
+    module="sklearn.base"
+)
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +38,28 @@ class PredictionService:
         self.feature_names = None
         self._load_artifacts()
     
+    def _fix_model_compatibility(self, model):
+        """Fix scikit-learn version compatibility issues."""
+        # Fix missing monotonic_cst attribute in DecisionTreeClassifier
+        # This attribute was added in newer scikit-learn versions but doesn't exist
+        # in models trained with older versions (1.3.2)
+        try:
+            if hasattr(model, 'estimators_'):
+                # For RandomForestClassifier, XGBoost, etc.
+                for estimator in model.estimators_:
+                    if hasattr(estimator, 'tree_') and not hasattr(estimator, 'monotonic_cst'):
+                        estimator.monotonic_cst = None
+            elif hasattr(model, 'tree_'):
+                # For DecisionTreeClassifier
+                if not hasattr(model, 'monotonic_cst'):
+                    model.monotonic_cst = None
+            elif hasattr(model, 'get_booster'):
+                # For XGBoost - no fix needed
+                pass
+        except Exception as e:
+            logger.warning(f"Could not fix model compatibility: {e}")
+        return model
+    
     def _load_artifacts(self) -> None:
         """Load model and preprocessing artifacts."""
         # Load model
@@ -39,6 +69,10 @@ class PredictionService:
         
         with open(model_path, 'rb') as f:
             self.model = pickle.load(f)
+        
+        # Fix compatibility issues
+        self.model = self._fix_model_compatibility(self.model)
+        
         logger.info(f"Model loaded from {model_path}")
         
         # Load scaler if exists
@@ -80,9 +114,14 @@ class PredictionService:
         else:
             X = features.values
         
-        # Make predictions
-        predictions = self.model.predict(X)
-        probabilities = self.model.predict_proba(X)[:, 1]
+        # Make predictions (suppress feature name warnings)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message=".*does not have valid feature names.*")
+            predictions = self.model.predict(X)
+            probabilities = self.model.predict_proba(X)[:, 1]
+        
+        # Ensure probabilities are in valid range [0, 1]
+        probabilities = np.clip(probabilities, 0.0, 1.0)
         
         return {
             'predictions': predictions.tolist(),

@@ -25,6 +25,7 @@ help:
 	@echo "make predict-monitor   - Predict on labeled monitor input (logs with labels)"
 	@echo "make predict-latest    - Predict on most recent session from processed features"
 	@echo "make monitor-open      - Open the latest monitoring report in default browser"
+	@echo "make reset-all         - Full reset (data/models/logs/reports/figures)"
 
 install:
 	pip install -r requirements.txt
@@ -77,6 +78,9 @@ predict-latest:
 
 monitor-open:
 	python -c "import webbrowser, pathlib; p=pathlib.Path('reports/monitor_report.html'); webbrowser.open_new_tab(p.resolve().as_uri())"
+
+reset-all: clean-all
+	python -c "import shutil, os; [shutil.rmtree(p, ignore_errors=True) for p in ['logs','reports','figures']]"
 
 docker-build:
 	docker build -t market-profile-ml:latest .

@@ -108,15 +108,15 @@ class TestPredictEndpoint:
         """Test prediction with valid request."""
         payload = {
             "features": {
-                "session_poc": 42500.0,
-                "session_vah": 42750.0,
-                "session_val": 42250.0,
-                "va_range_width": 500.0,
+                "session_poc": 95000.0,
+                "session_vah": 97000.0,
+                "session_val": 93000.0,
+                "va_range_width": 4000.0,
                 "balance_flag": 1,
-                "volume_imbalance": 0.52,
-                "one_day_return": 0.01,
-                "three_day_return": 0.025,
-                "atr_14": 350.0,
+                "volume_imbalance": 0.55,
+                "one_day_return": 0.012,
+                "three_day_return": 0.030,
+                "atr_14": 1500.0,
                 "rsi_14": 60.5,
                 "session_volume": 1500000.0
             }
@@ -141,8 +141,7 @@ class TestPredictEndpoint:
         """Test prediction with missing required field."""
         payload = {
             "features": {
-                "session_poc": 42500.0,
-                # Missing other required fields
+                "session_poc": 95000.0
             }
         }
         
@@ -158,30 +157,30 @@ class TestBatchPredictEndpoint:
         """Test batch prediction with valid request."""
         payload = [
             {
-                "session_poc": 42500.0,
-                "session_vah": 42750.0,
-                "session_val": 42250.0,
-                "va_range_width": 500.0,
+                "session_poc": 95000.0,
+                "session_vah": 97000.0,
+                "session_val": 93000.0,
+                "va_range_width": 4000.0,
                 "balance_flag": 1,
-                "volume_imbalance": 0.52,
-                "one_day_return": 0.01,
-                "three_day_return": 0.025,
-                "atr_14": 350.0,
+                "volume_imbalance": 0.55,
+                "one_day_return": 0.012,
+                "three_day_return": 0.030,
+                "atr_14": 1500.0,
                 "rsi_14": 60.5,
                 "session_volume": 1500000.0
             },
             {
-                "session_poc": 43000.0,
-                "session_vah": 43250.0,
-                "session_val": 42750.0,
-                "va_range_width": 500.0,
+                "session_poc": 96500.0,
+                "session_vah": 98000.0,
+                "session_val": 94500.0,
+                "va_range_width": 3500.0,
                 "balance_flag": 0,
                 "volume_imbalance": 0.48,
-                "one_day_return": -0.01,
-                "three_day_return": 0.015,
-                "atr_14": 320.0,
+                "one_day_return": -0.008,
+                "three_day_return": 0.018,
+                "atr_14": 1400.0,
                 "rsi_14": 45.0,
-                "session_volume": 1600000.0
+                "session_volume": 1800000.0
             }
         ]
         

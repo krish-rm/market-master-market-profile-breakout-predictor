@@ -261,6 +261,40 @@ def show_home_page():
     """)
 
 
+def _load_latest_defaults():
+    """Load latest engineered features as defaults and latest close price."""
+    defaults = {
+        "session_poc": 95000.0,
+        "session_vah": 97000.0,
+        "session_val": 93000.0,
+        "va_range_width": 4000.0,
+        "balance_flag": 1,
+        "volume_imbalance": 0.55,
+        "one_day_return": 0.012,
+        "three_day_return": 0.030,
+        "atr_14": 1500.0,
+        "rsi_14": 60.5,
+        "session_volume": 1_500_000.0,
+    }
+    latest_close = None
+    try:
+        df = pd.read_parquet("data/processed/market_profile.parquet").sort_values("date")
+        row = df.iloc[-1]
+        for k in defaults.keys():
+            if k in row.index and pd.notna(row[k]):
+                defaults[k] = float(row[k])
+    except Exception:
+        pass
+    # Try to load latest close from cached raw data
+    try:
+        raw = pd.read_parquet("data/raw/BTC-USD_2y_1h.parquet")
+        latest_close = float(raw['close'].iloc[-1])
+        latest_ts = str(raw.index.max())
+    except Exception:
+        latest_ts = None
+    return defaults, latest_close, latest_ts
+
+
 def show_predictions_page():
     """Display predictions page with input form."""
     st.header("🔮 Make Predictions")
@@ -268,6 +302,12 @@ def show_predictions_page():
     if not st.session_state.model_loaded:
         st.error("Model not loaded. Please ensure models are available in the models/ directory.")
         return
+
+    # Load latest defaults
+    defaults, latest_close, latest_ts = _load_latest_defaults()
+    if latest_close is not None:
+        st.info(f"Latest cached price: {latest_close:.2f} USD at {latest_ts}")
+    st.button("↻ Use latest engineered features", on_click=lambda: None)
     
     # Input form
     with st.form("prediction_form"):
@@ -279,28 +319,28 @@ def show_predictions_page():
             session_poc = st.number_input(
                 "Session POC (Point of Control)",
                 min_value=0.0,
-                value=42500.0,
+                value=defaults["session_poc"],
                 step=100.0,
                 help="Price level with most trading volume"
             )
             session_vah = st.number_input(
                 "Session VAH (Value Area High)",
                 min_value=0.0,
-                value=42750.0,
+                value=defaults["session_vah"],
                 step=100.0,
                 help="Upper boundary of value area (70th percentile)"
             )
             session_val = st.number_input(
                 "Session VAL (Value Area Low)",
                 min_value=0.0,
-                value=42250.0,
+                value=defaults["session_val"],
                 step=100.0,
                 help="Lower boundary of value area (30th percentile)"
             )
             va_range_width = st.number_input(
                 "VA Range Width",
                 min_value=0.0,
-                value=500.0,
+                value=defaults["va_range_width"],
                 step=10.0,
                 help="Width of value area (VAH - VAL)"
             )
@@ -309,14 +349,14 @@ def show_predictions_page():
             balance_flag = st.selectbox(
                 "Balance Flag",
                 [0, 1],
-                index=1,
+                index=1 if int(defaults["balance_flag"]) == 1 else 0,
                 help="1 if balanced session, 0 if unbalanced"
             )
             volume_imbalance = st.slider(
                 "Volume Imbalance",
                 min_value=0.0,
                 max_value=1.0,
-                value=0.52,
+                value=float(np.clip(defaults["volume_imbalance"], 0.0, 1.0)),
                 step=0.01,
                 help="Ratio of upside volume to total volume"
             )
@@ -324,7 +364,7 @@ def show_predictions_page():
                 "1-Day Return",
                 min_value=-1.0,
                 max_value=1.0,
-                value=0.01,
+                value=defaults["one_day_return"],
                 step=0.001,
                 format="%.3f",
                 help="1-day return percentage"
@@ -333,7 +373,7 @@ def show_predictions_page():
                 "3-Day Return",
                 min_value=-1.0,
                 max_value=1.0,
-                value=0.025,
+                value=defaults["three_day_return"],
                 step=0.001,
                 format="%.3f",
                 help="3-day return percentage"
@@ -343,7 +383,7 @@ def show_predictions_page():
             atr_14 = st.number_input(
                 "ATR (14-period)",
                 min_value=0.0,
-                value=350.0,
+                value=defaults["atr_14"],
                 step=10.0,
                 help="Average True Range - volatility measure"
             )
@@ -351,14 +391,14 @@ def show_predictions_page():
                 "RSI (14-period)",
                 min_value=0.0,
                 max_value=100.0,
-                value=60.5,
+                value=float(np.clip(defaults["rsi_14"], 0.0, 100.0)),
                 step=0.1,
                 help="Relative Strength Index - momentum oscillator"
             )
             session_volume = st.number_input(
                 "Session Volume",
                 min_value=0.0,
-                value=1500000.0,
+                value=defaults["session_volume"],
                 step=10000.0,
                 format="%.0f",
                 help="Total trading volume for the session"

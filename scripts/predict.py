@@ -167,7 +167,8 @@ def load_input(input_path: str) -> pd.DataFrame:
 def save_predictions(
     results: Dict[str, Any],
     output_path: str = None,
-    input_path: str = None
+    input_path: str = None,
+    true_labels: List[int] | None = None,
 ) -> None:
     """Save predictions to file."""
     if output_path is None:
@@ -179,6 +180,33 @@ def save_predictions(
     with open(output_path, 'w') as f:
         json.dump(results, f, indent=2)
     logger.info(f"Predictions saved to {output_path}")
+
+    # Append lightweight prediction log for monitoring (no PII)
+    try:
+        from datetime import datetime
+        log_dir = Path("logs")
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_path = log_dir / "predictions.csv"
+
+        timestamp = datetime.utcnow().isoformat()
+        num = results.get("num_samples", 0)
+        preds = results.get("predictions", [])
+        probs = results.get("probabilities", [])
+        df_log_dict = {
+            "timestamp": [timestamp] * len(preds),
+            "prediction": preds,
+            "probability": probs,
+            "source_input": [input_path or "N/A"] * len(preds),
+        }
+        # If caller provided true labels, include them
+        if true_labels is not None and len(true_labels) == len(preds):
+            df_log_dict["true_label"] = list(map(int, true_labels))
+        df_log = pd.DataFrame(df_log_dict)
+        header = not log_path.exists()
+        df_log.to_csv(log_path, mode="a", index=False, header=header)
+        logger.info(f"Appended {len(preds)} rows to {log_path}")
+    except Exception as e:
+        logger.warning(f"Failed to append prediction log: {e}")
 
 
 def main(
@@ -201,8 +229,17 @@ def main(
     logger.info(f"Predictions completed")
     logger.info(f"Results:\n{json.dumps(results, indent=2)}")
     
+    # Save predictions (include true labels if present in input)
+    true_labels = None
+    if "true_label" in features.columns:
+        try:
+            true_labels = features["true_label"].astype(int).tolist()
+        except Exception:
+            # Fall back silently if conversion fails
+            pass
+
     # Save predictions
-    save_predictions(results, output_path, input_path)
+    save_predictions(results, output_path, input_path, true_labels=true_labels)
 
 
 if __name__ == "__main__":

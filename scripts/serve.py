@@ -59,15 +59,15 @@ class SessionFeatures(BaseModel):
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
-                "session_poc": 42500.0,
-                "session_vah": 42750.0,
-                "session_val": 42250.0,
-                "va_range_width": 500.0,
+                "session_poc": 95000.0,
+                "session_vah": 97000.0,
+                "session_val": 93000.0,
+                "va_range_width": 4000.0,
                 "balance_flag": 1,
-                "volume_imbalance": 0.52,
-                "one_day_return": 0.01,
-                "three_day_return": 0.025,
-                "atr_14": 350.0,
+                "volume_imbalance": 0.55,
+                "one_day_return": 0.012,
+                "three_day_return": 0.030,
+                "atr_14": 1500.0,
                 "rsi_14": 60.5,
                 "session_volume": 1500000.0
             }

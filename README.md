@@ -279,19 +279,49 @@ pip install -r requirements.txt
 python -c "import yfinance, sklearn, fastapi; print('✅ All dependencies installed')"
 ```
 
-### Quick Start with Make
-
-```bash
-make install    # Install dependencies
-make dev        # Install with dev tools (pytest, jupyter)
-make test       # Run tests
-make train      # Train model
-make serve      # Start API server
-```
-
 ---
 
 ## Usage
+
+### Quick Start — Real BTC‑USD (End‑to‑End)
+
+Run the whole pipeline on fresh market data, then explore predictions, performance, and the dashboard.
+
+```bash
+# 1) Install
+make install
+
+# 2) Refresh data and retrain on the latest 2y of BTC‑USD 1h candles
+make data-clear-cache
+make retrain-latest
+
+# 3) Quick sanity check: print latest live BTC‑USD 1h close
+make latest-price
+
+# 4) Make predictions
+make predict-sample          # run on examples/sample_input.csv (demo)
+make predict-latest          # run on the most recent engineered session
+make predict-monitor         # build labeled input from processed features and log predictions
+
+# 5) Feature importance (opens an interactive bar chart at figures/feature_importance.html)
+make feature-importance
+
+# 6) Serve API and open docs at http://localhost:9696/docs
+make serve
+
+# 7) Start dashboard (auto‑loads latest engineered features and latest cached price)
+make dashboard
+
+# 8) Build and open performance/drift monitoring report
+make monitor-report
+make monitor-open
+```
+
+Expected Outputs:
+- Training: saves `models/best_model.pkl`, `models/metrics.json`, `data/processed/market_profile.parquet`
+- Predictions: writes `sample_input_predictions.json` and appends rows to `logs/predictions.csv`
+- Feature importance: `figures/feature_importance.html`
+- Monitoring: `reports/monitor_report.html` + `reports/monitor_report.json` (metrics and PSI if labels exist)
 
 ### 1. Training the Model
 
@@ -339,15 +369,15 @@ python scripts/predict.py --input examples/sample_prediction_request.json
 **Input format:**
 ```json
 {
-  "session_poc": 42500.0,
-  "session_vah": 42750.0,
-  "session_val": 42250.0,
-  "va_range_width": 500.0,
+  "session_poc": 95000.0,
+  "session_vah": 97000.0,
+  "session_val": 93000.0,
+  "va_range_width": 4000.0,
   "balance_flag": 1,
-  "volume_imbalance": 0.52,
-  "one_day_return": 0.01,
-  "three_day_return": 0.025,
-  "atr_14": 350.0,
+  "volume_imbalance": 0.55,
+  "one_day_return": 0.012,
+  "three_day_return": 0.030,
+  "atr_14": 1500.0,
   "rsi_14": 60.5,
   "session_volume": 1500000.0
 }
@@ -393,11 +423,11 @@ curl -X POST http://localhost:9696/batch-predict \
   -H "Content-Type: application/json" \
   -d '[
     {
-      "session_poc": 42500.0,
+      "session_poc": 95000.0,
       ...
     },
     {
-      "session_poc": 43000.0,
+      "session_poc": 96500.0,
       ...
     }
   ]'
@@ -430,6 +460,43 @@ Dashboard opens at: `http://localhost:8501`
 2. **Predictions**: Make predictions with interactive form
 3. **Model Performance**: View ROC AUC, Precision, Recall, F1-Score, and confusion matrix
 4. **Feature Explorer**: Understand Market Profile features and view feature importance
+
+### 6. Monitoring (Performance & Drift)
+
+Generate a monitoring report with metrics and drift analysis:
+
+```bash
+# Ensure you have a predictions log (includes optional true_label)
+python scripts/predict.py --input examples/sample_input.csv
+
+# Build monitoring report (HTML + JSON)
+make monitor-report
+# or
+python scripts/monitor.py --log logs/predictions.csv --output reports/monitor_report.html
+```
+
+Outputs:
+- `logs/predictions.csv`: Append-only prediction log (timestamp, prediction, probability, optional true_label)
+- `reports/monitor_report.html`: Interactive report (probability time series, histogram, rolling accuracy when labels exist)
+- `reports/monitor_report.json`: Summary metrics (accuracy, precision, recall, F1, ROC AUC when labels exist) and optional PSI drift
+
+### 7. Refresh Cache and Load Latest Data
+
+Get today’s data into the pipeline by clearing cached Parquet files and retraining:
+
+```bash
+# Remove cached raw/processed Parquet files
+make data-clear-cache
+
+# Retrain to fetch latest data and rebuild features/models
+make retrain-latest
+```
+
+Quickly print the latest live BTC-USD 1h close (without retraining):
+
+```bash
+make latest-price
+```
 
 ---
 
@@ -587,10 +654,11 @@ Top 5 features by importance:
 ### Short Term
 - [ ] Add LSTM for temporal dependencies
 - [ ] Implement real-time predictions with streaming data
-- [ ] Add dashboard visualization (Streamlit/Dash)
+- [x] Add dashboard visualization (Streamlit)
 - [ ] Deploy to AWS/GCP/Azure
 
 ### Medium Term
+- [ ] Model performance monitoring (logging, drift detection, reports)
 - [ ] Multi-asset support (ETH, S&P 500, etc.)
 - [ ] Level 2 order book features
 - [ ] Sentiment analysis integration

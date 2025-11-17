@@ -557,33 +557,6 @@ See the full troubleshooting guide in [docs/Troubleshooting.md](docs/Troubleshoo
 
 ---
 
-## Model Evaluation Metrics (Sample/Reference)
-
-Note: The table below is an illustrative example. Your actual metrics will vary per retrain.
-See current metrics in `models/metrics.json` and on the Dashboard (Model Performance).
-
-### Test Set Performance (example)
-
-```
-                      Baseline    Logistic Reg  Random Forest  XGBoost
-ROC AUC               0.500       0.580         0.640          0.672
-Precision (class 1)   0.500       0.615         0.635          0.645
-Recall (class 1)      0.500       0.520         0.580          0.589
-F1-Score              0.500       0.565         0.607          0.615
-```
-
-**Baseline:** Random classifier (always predict majority class)
-
-### Feature Importance (example)
-
-Top 5 features by importance (see your current chart at `figures/feature_importance.html`):
-1. session_vah (0.28)
-2. session_volume (0.18)
-3. three_day_return (0.15)
-4. atr_14 (0.12)
-5. rsi_14 (0.10)
-
----
 
 ## Future Enhancements
 
@@ -593,7 +566,6 @@ Top 5 features by importance (see your current chart at `figures/feature_importa
 - [ ] Deploy to AWS/GCP/Azure
 
 ### Medium Term
-- [ ] Model performance monitoring (logging, drift detection, reports)
 - [ ] Multi-asset support (ETH, S&P 500, etc.)
 - [ ] Level 2 order book features
 - [ ] Sentiment analysis integration

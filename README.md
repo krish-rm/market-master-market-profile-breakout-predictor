@@ -42,12 +42,14 @@ This project implements a complete ML pipeline to analyze Bitcoin hourly price d
 
 Traditional OHLC (Open-High-Low-Close) candlestick charts show how far price travels within a period, but they treat every price in that interval as equally important. Two sessions can share the same candle yet be very different:
 
-- **Session A:** Price quickly spikes from \$42k to \$44k and collapses—most trading happened near \$42k.
-- **Session B:** Price grinds between \$43.7k–\$44k for hours—most trading happened near the highs.
+- **Session A:** Price quickly spikes from \$101 to \$105 and collapses—most trading happened near \$101.
+- **Session B:** Price grinds between \$105–\$107 for hours—most trading happened near the highs.
+
+![Traditional OHLC vs Market Profile](docs/image.png)
 
 Candlesticks alone would look similar, but market behaviour is not. Market Profile fills this gap by plotting where volume clustered. Instead of only “price vs. time”, we now see “price vs. time vs. participation”.
 
-A Market Profile session builds a histogram of traded volume by price level, surfaces the **Point of Control (POC)**—the price with the most activity—and marks the **Value Area** (≈70 % of volume). If price spends the day between \$42.4k–\$42.8k, the Value Area reminds us that buyers and sellers agreed there, even if the session printed a long wick elsewhere.
+A Market Profile session builds a histogram of traded volume by price level, surfaces the **Point of Control (POC)**—the price with the most activity—and marks the **Value Area** (≈70 % of volume). If price spends the day between \$104–\$106, the Value Area reminds us that buyers and sellers agreed there, even if the session printed a long wick elsewhere.
 
 ### The Challenge
 
@@ -493,6 +495,12 @@ market-profile-ml/
 ├── Makefile                           # Development commands
 ├── .gitignore                         # Git ignore rules
 │
+├── docs/                              # Detailed guides
+│   ├── API.md
+│   ├── Development.md
+│   ├── Docker.md
+│   └── Troubleshooting.md
+│
 ├── configs/
 │   ├── train.yaml                     # Training configuration
 │   └── api_schema.json                # API input schema
@@ -519,19 +527,23 @@ market-profile-ml/
 │
 ├── examples/
 │   ├── sample_prediction_request.json # Example API input
-│   └── sample_input.csv               # Example CSV input
+│   ├── sample_input.csv               # Example CSV input
+│   └── monitor_input.csv              # Example labeled batch for monitoring
 │
 ├── tests/
 │   ├── __init__.py
 │   ├── test_market_profile.py         # Feature engineering tests
-│   └── test_api.py                    # API endpoint tests
+│   ├── test_api.py                    # API endpoint tests
+│   └── conftest.py                    # Shared pytest fixtures & warning filters
 │
 ├── scripts/
 │   ├── __init__.py
 │   ├── train.py                       # Model training script
 │   ├── predict.py                     # Batch prediction script
 │   ├── serve.py                       # FastAPI application
-│   └── dashboard.py                   # Streamlit dashboard
+│   ├── dashboard.py                   # Streamlit dashboard
+│   ├── feature_importance.py          # Feature importance visualization
+│   └── monitor.py                     # Performance & drift reporting
 └── notebook.ipynb                     # Jupyter notebook (EDA)
 ```
 
